@@ -1,0 +1,49 @@
+version: '3'
+services:
+  backend:
+    build: 
+      context: backend/.
+      dockerfile: DockerfileTST
+    image: mjanicki/spotify_backend:1.0-dev
+    # volumes:
+    #   - .:/workspace:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"
+#    ports:
+#      - "8080:8080"
+    container_name: spotify_backend
+    networks:
+      - spotify_net
+    hostname: springboot
+    # links:
+    #   - db
+  frontend:
+    build: 
+      context: frontend/.
+      dockerfile: DockerfileTST
+    image: mjanicki/spotify_frontend:1.0
+    # volumes:
+    #   - .:/workspace:cached
+    # command: /bin/sh -c "while sleep 1000; do :; done"
+    ports:
+      - "3000:3000"
+    container_name: spotify_frontend
+    links:
+      - backend
+    networks:
+      - spotify_net
+  nginx:
+    image: nginx:latest
+    container_name: spotify_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+    networks:
+      - spotify_net
+networks:
+  spotify_net:
+    external: false
+
